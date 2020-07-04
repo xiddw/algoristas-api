@@ -1,18 +1,28 @@
+# Golang version
 FROM golang:1.8
 
+# Maintainer
 MAINTAINER rafaelrendonpablo@gmail.com
 
-RUN go get github.com/onsi/ginkgo/ginkgo &&  go get github.com/onsi/gomega
+# Get the dependencies
+RUN go get github.com/onsi/ginkgo/ginkgo &&  go get github.com/onsi/gomega && go get -u golang.org/x/lint/golint
 
-RUN mkdir -p /app
+# Will download our package to $GOPATH/src/github.com/algoristas/api
+RUN go get github.com/algoristas/api
 
-WORKDIR /app
+# Set working directory
+ENV APP_ROOT $GOPATH/src/github.com/algoristas/api
+WORKDIR $GOPATH/src/github.com/algoristas/api
+COPY . $GOPATH/src/github.com/algoristas/api
 
-ENV APP_ROOT /app
+# Get dependencies
+RUN go get
 
-COPY . /app
+# Build
+RUN env GOOS=linux GOARCH=amd64 go build -o bin/api github.com/algoristas/api
 
+# Configure port
 EXPOSE 8080
 
-#CMD ["./bin/deploy.sh"]
-CMD ["./bin/api"]
+# Run deploy and test it
+CMD ["./bin/deploy.sh"]
